@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Coffee Check-ins</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@tailwindcss/browser@latest"></script>
+    <style>
+      /* Custom styles for the table and image display */
+      .coffee-image {
+        max-width: 100px; /* Limit image width */
+        height: auto;
+        border-radius: 0.5rem; /* Rounded corners for images */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow */
+      }
+      .checkin-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 2rem;
+        border-radius: 0.5rem;
+        overflow: hidden; /* Needed for rounded corners on the table */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Add shadow to the table */
+      }
+      .checkin-table thead th {
+        background-color: #f7fafc; /* Light background for header */
+        color: #4a5568; /* Darker text for header */
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600; /* Bold header text */
+        border-bottom: 1px solid #e2e8f0; /* Header bottom border */
+      }
+      .checkin-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0; /* Row bottom border */
+      }
+      .checkin-table tbody tr:last-child td {
+        border-bottom: none; /* Remove border from last row */
+      }
+      .checkin-table tbody tr:nth-child(odd) {
+        background-color: #ffffff; /* White background for odd rows */
+      }
+      .checkin-table tbody tr:nth-child(even) {
+        background-color: #f7fafc; /* Light background for even rows */
+      }
+      .checkin-table tbody td a {
+        color: #4299e1; /* Blue color for links */
+        text-decoration: none;
+        hover: text-decoration: underline; /* Underline on hover */
+      }
+      .no-data {
+        padding: 2rem;
+        text-align: center;
+        color: #718096;
+      }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="container mx-auto p-4 md:p-8">
+        <h1 class="text-3xl font-semibold text-gray-800 mb-6 text-center">Recent Coffee Check-ins</h1>
+
+        <div id="checkin-data" class="mt-8">
+            <p class="text-gray-600 text-center">Loading coffee check-ins...</p>
+        </div>
+    </div>
+
+    <script>
+    const checkinDataContainer = document.getElementById('checkin-data');
+
+    fetch('http://localhost:8080/checkins/recent')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.length > 0) {
+                let tableHTML = `
+                    <table class="checkin-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Coffee</th>
+                                <th>Image</th>
+                                <th>Caption</th>
+                                <th>Timestamp</th>
+                                <th>Rating</th>
+                                <th>Location</th>
+                                <th>Brew Style</th>
+                                <th>Brewer</th>
+                                <th>Purchased Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.forEach(checkin => {
+                    tableHTML += `
+                            <tr>
+                                <td>${checkin.UserName} (<a href="/user/${checkin.UserID}">${checkin.UserID}</a>)</td>
+                                <td><a href="/coffee/${checkin.CoffeeID}">${checkin.CoffeeName}</a></td>
+                                <td>
+                                    ${checkin.Image ? `<img src="${checkin.Image}" alt="Coffee" class="coffee-image">` : 'No Image'}
+                                </td>
+                                <td>${checkin.Caption ? checkin.Caption : 'No Caption'}</td>
+                                <td>${checkin.Timestamp}</td>
+                                <td>${checkin.Rating ? checkin.Rating : 'No Rating'}</td>
+                                <td>${checkin.Location ? checkin.Location : 'No Location'}</td>
+                                <td>${checkin.BrewStyle ? checkin.BrewStyle : 'No Style'}</td>
+                                <td>${checkin.Brewer ? checkin.Brewer : 'No Brewer'}</td>
+                                <td>${checkin.PurchasedLocationName ? checkin.PurchasedLocationName + ' (' + checkin.PurchasedLocationID + ')' : 'No Purchase Location'}</td>
+                            </tr>
+                    `;
+                });
+
+                tableHTML += `
+                        </tbody>
+                    </table>
+                `;
+                checkinDataContainer.innerHTML = tableHTML;
+            } else {
+                checkinDataContainer.innerHTML = `<p class="no-data">No coffee check-ins found.</p>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching check-ins:', error);
+            checkinDataContainer.innerHTML = `<p class="text-red-500 text-center">Error fetching data: ${error.message}</p>`;
+        });
+    </script>
+</body>
+</html>

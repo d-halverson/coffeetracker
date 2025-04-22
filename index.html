@@ -1,1 +1,39 @@
-<h1>hello</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Call Example</title>
+</head>
+<body>
+    <h1 id="greeting">Loading...</h1>
+    <script>
+        // Function to make the API call
+        async function fetchData() {
+            try {
+                // Use fetch to make a GET request
+                const response = await fetch('http://localhost:8080/helloworld');
+
+                // Check if the response is successful (status code 200-299)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Parse the JSON response
+                const data = await response.json();
+
+                // Update the content of the h1 element with the greeting
+                document.getElementById('greeting').textContent = data.message;
+            } catch (error) {
+                // Handle errors, e.g., display an error message
+                console.error('Error fetching data:', error);
+                document.getElementById('greeting').textContent = 'Error: Could not load data';
+            }
+        }
+
+        // Call the fetchData function when the script loads
+        fetchData();
+    </script>
+</body>
+</html>
+
